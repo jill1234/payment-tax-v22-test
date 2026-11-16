@@ -52,3 +52,12 @@
 
 /* Tax simplified master and yearly detail: keep data rows on one horizontal line. */
 #taxTemplateList,#taxYearList{overflow-x:auto}#taxYearList .data-row,#taxTemplateList .data-row{width:max-content;min-width:100%;flex-wrap:nowrap}#taxYearPanel .tax-advanced{margin-top:1rem;padding:1rem;border:1px solid #d6c9e0;border-radius:12px}#taxYearPanel .tax-advanced summary{cursor:pointer;font-weight:600}#taxYearPanel .tax-advanced form{margin-top:1rem}
+
+/* V2.2.5 overview follows payment-tax-test, keeps every reminder on one scrollable row. */
+#upcoming{overflow-x:auto;-webkit-overflow-scrolling:touch}
+#upcoming .data-row{width:max-content;min-width:100%;display:flex;justify-content:space-between;gap:22px;align-items:center}
+#upcoming .data-row span:nth-child(3){font-weight:700;font-variant-numeric:tabular-nums}
+#upcoming .data-row span:last-child{color:#8b647a}
+#cardReminders .data-row{justify-content:space-between}
+.metrics.four article{background:#f3edf7;border-radius:16px}
+@media(min-width:800px){.metrics.four{grid-template-columns:repeat(4,minmax(0,1fr))}}
