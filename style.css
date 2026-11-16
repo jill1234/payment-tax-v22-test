@@ -1,0 +1,51 @@
+:root{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","Microsoft JhengHei",sans-serif;color:#483f50;background:#f9f7fb}*{box-sizing:border-box}body{margin:0}header{background:linear-gradient(115deg,#e8dff0,#faf5ec);border-bottom:1px solid #e7deeb;padding:24px 0 18px}.wrap{max-width:900px;margin:auto;padding-left:18px;padding-right:18px}.eyebrow{font-size:12px;letter-spacing:.07em;color:#7e658f}h1{font-size:23px;margin:8px 0}header p{margin:0;color:#766a7d;font-size:13px}nav{display:flex;gap:8px;overflow:auto;padding:18px 0;position:sticky;top:0;background:#f9f7fb;z-index:2}button{font:inherit;cursor:pointer;border:1px solid #d9cce1;background:white;border-radius:12px;padding:10px 14px;color:#5d4a6b;white-space:nowrap}nav button.active,.primary{background:#82699a;color:white;border-color:#82699a}button:hover{filter:brightness(.97)}.page{display:none}.page.active{display:block}h2{font-size:21px}h3{font-size:17px}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.metrics article,.panel,.item,.notice{background:white;border:1px solid #e8e0ec;border-radius:16px;padding:17px}.metrics span{display:block;font-size:13px;color:#7d7182}.metrics strong{font-size:30px;display:block;margin-top:8px;color:#6e5285}.notice{background:#f0ebf6;line-height:1.7;margin:16px 0}.panel{margin:12px 0 20px}form label{display:block;font-size:14px;margin:13px 0;font-weight:600}input,select{display:block;width:100%;margin-top:7px;border:1px solid #d6cbdc;border-radius:10px;background:#fff;padding:12px;font:inherit;color:#453d4b}.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}.hint{color:#85788a;font-size:13px;line-height:1.6}.stack{display:grid;gap:10px;margin-bottom:35px}.item strong{display:block;margin-bottom:8px}.item small{display:block;color:#7b7082;line-height:1.8}.item .chip{display:inline-block;padding:3px 9px;background:#eee8f4;border-radius:12px;color:#715784;font-size:12px;margin-top:6px}#message:not(:empty){background:#eee7f4;padding:12px;border-radius:10px;margin:4px 0 12px}code{word-break:break-word}@media(max-width:580px){.two{grid-template-columns:1fr;gap:0}.metrics{gap:7px}.metrics article{padding:12px}.metrics strong{font-size:25px}h1{font-size:21px}}
+
+.metrics.four{grid-template-columns:repeat(4,minmax(0,1fr))}.metrics.four article{background:#f4eef8}.panel{margin-top:18px}.item button{margin:5px 6px 4px 0}.item select,.item input{max-width:220px}.inline-form{display:flex;flex-wrap:wrap;align-items:end;gap:10px;margin-top:12px}.inline-form label{flex:1 1 145px}.inline-form button{align-self:end}.subtle{color:#776a84}.error{color:#9e3434}.status-overdue{color:#a33838;font-weight:700}.status-due{color:#99611a;font-weight:700}@media(max-width:850px){.metrics.four{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:450px){.metrics.four{grid-template-columns:1fr 1fr}.metrics.four strong{font-size:1.15rem}}
+
+/* V2.2 UI-02：總覽單列式到期清單 */
+#upcoming.stack{display:block;margin-bottom:0}
+.upcoming-row{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:15px 2px;border-bottom:1px solid #eee7f1;min-width:0}
+.upcoming-row:last-child{border-bottom:0}
+.upcoming-name{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.upcoming-right{display:grid;grid-template-columns:120px 125px 90px;gap:12px;align-items:center;text-align:right;flex-shrink:0}
+.upcoming-date,.upcoming-amount{font-variant-numeric:tabular-nums;white-space:nowrap}
+.upcoming-status{margin:0!important;text-align:center;white-space:nowrap}
+.upcoming-status.overdue{color:#a33838!important;background:#fbe8e8!important}
+@media(max-width:650px){.upcoming-row{align-items:flex-start;gap:8px}.upcoming-name{flex:1}.upcoming-right{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px 10px;max-width:62%;font-size:13px}}
+
+/* Stage 2.1: compact plan list and standalone detail view */
+[hidden]{display:none!important}
+.plan-toolbar{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:14px}
+.plan-toolbar label{font-weight:600;font-size:14px}
+#planList.stack{margin-bottom:8px}
+.plan-row{display:block;text-align:left;width:100%;white-space:normal;padding:16px;border-radius:12px}
+.plan-row:focus-visible{outline:3px solid #82699a;outline-offset:2px}
+.plan-row-head,.plan-row-values{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.plan-row-head strong{font-size:16px;overflow-wrap:anywhere}
+.plan-row-values{margin-top:12px;font-size:13px;color:#75677e;font-variant-numeric:tabular-nums}
+.plan-badge{font-size:12px;background:#f0eaf5;border-radius:12px;padding:4px 10px;white-space:nowrap}
+.plan-badge.overdue{color:#9b3030;background:#fbe9e9}
+.pagination{display:flex;justify-content:center;gap:10px;margin-top:16px}
+.pagination button:disabled{opacity:.45;cursor:default}
+#planDetailView{margin-top:16px}
+.plan-summary{line-height:1.7;margin-bottom:0}
+@media(max-width:580px){.plan-toolbar{grid-template-columns:1fr;gap:0}.plan-row-values{flex-wrap:wrap}}
+
+/* V2.2 Stage 2.2 */
+.history-actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 18px}.history-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:18px 0;border-bottom:1px solid #eee7f1}.history-row strong{display:block}.history-row small{display:block;margin-top:6px;color:#80718a}.history-money{white-space:nowrap;font-variant-numeric:tabular-nums}#taxDetails .item{margin-bottom:12px}#cardList{margin-bottom:20px}#cardTransactionList .item{margin-bottom:8px}@media(max-width:580px){.history-row{gap:8px}.history-money{font-size:14px}}
+
+/* HIST-01 / INST-02 / CARD-03: one horizontal row per record on mobile */
+.hscroll{width:100%;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+.data-row{display:flex;align-items:center;gap:12px;min-width:max-content;padding:11px 8px;border-bottom:1px solid #e9e2ed;white-space:nowrap}
+.data-row>*{flex:0 0 auto}.data-row strong{min-width:125px}.data-row small{font-size:13px;color:#6d6174}
+.data-row button{width:auto;margin:0}.data-row form{display:flex;gap:8px;align-items:center;flex-wrap:nowrap;margin:0}.data-row form input{min-width:110px;max-width:170px}.data-row form label{min-width:120px;font-size:12px}
+.data-row .inline-form{padding:0;background:transparent;border:0}.data-row .inline-form input{width:120px}
+.hscroll .plan-row{width:auto;min-width:max-content;white-space:nowrap;text-align:left}.hscroll .plan-row-head,.hscroll .plan-row-values{flex-wrap:nowrap;gap:18px}
+#cardReminders .data-row{min-width:max-content}.data-row .chip{margin:0}
+@media(max-width:650px){.data-row{flex-wrap:nowrap}.upcoming-row{min-width:max-content;flex-wrap:nowrap}.upcoming-right{flex-wrap:nowrap;max-width:none}}
+/* iPhone: payment inputs can wrap; record rows remain horizontal. */
+.inline-form{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.inline-form label{flex:1 1 160px;min-width:140px}
+.inline-form button{flex:0 0 auto}
+.hscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.data-row{width:max-content;min-width:100%;white-space:nowrap}
