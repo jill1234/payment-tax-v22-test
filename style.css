@@ -49,3 +49,6 @@
 .inline-form button{flex:0 0 auto}
 .hscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .data-row{width:max-content;min-width:100%;white-space:nowrap}
+
+/* Tax simplified master and yearly detail: keep data rows on one horizontal line. */
+#taxTemplateList,#taxYearList{overflow-x:auto}#taxYearList .data-row,#taxTemplateList .data-row{width:max-content;min-width:100%;flex-wrap:nowrap}#taxYearPanel .tax-advanced{margin-top:1rem;padding:1rem;border:1px solid #d6c9e0;border-radius:12px}#taxYearPanel .tax-advanced summary{cursor:pointer;font-weight:600}#taxYearPanel .tax-advanced form{margin-top:1rem}

@@ -251,4 +251,55 @@ const oldRenderV23=render;
 render=async function(){await oldRenderV23();const [plans,inst,ip,cards,periods,templates,bills]=await Promise.all(['installmentPlans','installments','installmentPayments','cards','cardPeriods','taxTemplates','taxBills'].map(all));const arch=$('archiveList');arch.replaceChildren();for(const p of plans.filter(x=>x.archived))rowV22(arch,['分期',p.name,`原始 ${money(p.totalCents/100)}`],[btnV22('還原歸檔',()=>archiveV22(p.id,true))]);for(const c of cards.filter(x=>x.archived))rowV22(arch,['信用卡',c.name],[btnV22('還原歸檔',()=>archiveMasterV23('cards',c.id,true))]);for(const t of templates.filter(x=>x.archived))rowV22(arch,['稅務',t.name],[btnV22('還原歸檔',()=>archiveMasterV23('taxTemplates',t.id,true))]);if(!arch.children.length)rowV22(arch,['目前沒有已歸檔資料']);const root=$('cardList');root.replaceChildren();for(const c of cards.filter(x=>!x.archived)){const ps=periods.filter(p=>p.cardId===c.id).sort((a,b)=>a.start.localeCompare(b.start));rowV22(root,[c.name,`門檻 ${money(c.thresholdCents/100)}`,`已產生 ${ps.length} 期`],[btnV22('查看各期',()=>{const target=$('cardPeriodsDetailV23');target.hidden=false;target.replaceChildren();for(const p of ps)rowV22(target,[p.start+' ～ '+p.end,`最低消費 ${money(p.thresholdCents/100)}`]);target.scrollIntoView({block:'nearest'})}),...(c.frequency?[btnV22('重新產生消費期',()=>regenerateCardV23(c.id))]:[]),btnV22('歸檔',()=>archiveMasterV23('cards',c.id,false))])}const troot=$('taxTemplateList');troot.replaceChildren();for(const t of templates.filter(x=>!x.archived))rowV22(troot,[t.name,`每年 ${t.month} 月 ${t.day} 日`],[btnV22('歸檔',()=>archiveMasterV23('taxTemplates',t.id,false))]);for(const b of [...$('taxDetails').children]){const year=b.textContent||'';if(templates.some(t=>t.archived&&bills.some(x=>x.sourceTemplateId===t.id&&year.includes(x.name))))b.hidden=true}
 renderPlanBrowser(plans.filter(x=>!x.archived),inst,ip);
 };
-async function init(){try{db=await openDb();document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));$('message').textContent=''}));$('planSearch').addEventListener('input',e=>{planView.search=e.target.value;planView.page=1;render()});$('planFilter').addEventListener('change',e=>{planView.filter=e.target.value;planView.page=1;render()});$('backToPlans').addEventListener('click',()=>{planView.selectedId=null;render();$('plans').scrollIntoView({block:'start'})});$('planForm').addEventListener('submit',createPlan);$('taxForm').addEventListener('submit',createTax);$('cardForm').addEventListener('submit',createCard);$('cardTransactionForm').addEventListener('submit',createCardTransaction);$('cardRefundForm').addEventListener('submit',createRefundV22);$('existingPeriodForm').addEventListener('submit',createExistingPeriodV22);$('taxTemplateForm').addEventListener('submit',createTaxTemplate);$('generateTaxBills').addEventListener('click',generateYearTaxes);$('generateTaxYear').value=new Date().getFullYear();$('historyCategory').addEventListener('change',()=>render());$('historySearch').addEventListener('input',()=>render());$('clearHistory').addEventListener('click',()=>{$('historyCategory').value='all';$('historySearch').value='';render()});$('historyCsv').addEventListener('click',exportHistoryCsv);$('historyPdf').addEventListener('click',printHistory);$('download').addEventListener('click',exportData);$('taxForm').elements.year.value=new Date().getFullYear();await render()}catch(err){message(`無法啟動資料庫：${err.message}`);document.querySelectorAll('form button').forEach(x=>x.disabled=true)}}init();
+
+// TAX-A: one recurring master, current-year automatic creation, optional advanced operations.
+let selectedTaxMasterV24=null;
+async function ensureCurrentTaxYearV24(){
+ const year=Number(twDate().slice(0,4));
+ const templates=(await all('taxTemplates')).filter(t=>t.active!==false&&!t.archived);
+ const bills=await all('taxBills');
+ const missing=templates.filter(t=>!bills.some(b=>b.sourceTemplateId===t.id&&Number(b.year)===year));
+ if(!missing.length)return 0;
+ await txAtomicV22(['taxTemplates','taxBills'],(d,ops)=>{
+  for(const t of missing){const current=d.taxTemplates.find(x=>x.id===t.id);
+   if(!current||current.archived||current.active===false||d.taxBills.some(b=>b.sourceTemplateId===t.id&&Number(b.year)===year))continue;
+   ops.put('taxBills',{id:uid(),sourceTemplateId:t.id,year,name:t.name,due:templateDue(year,t.month,t.day),amountCents:null,paidCents:0,status:'amount-pending',createdAt:new Date().toISOString()});
+  }
+ });
+ return missing.length;
+}
+const previousTaxRenderV24=render;
+render=async function(){
+ await previousTaxRenderV24();
+ const [masters,bills,payments]=await Promise.all(['taxTemplates','taxBills','taxPayments'].map(all));
+ const browser=$('taxTemplateList'),years=$('taxYearList');browser.replaceChildren();years.replaceChildren();
+ const visible=masters.filter(t=>!t.archived);
+ for(const t of visible){
+  rowV22(browser,[t.name,`每年 ${t.month} 月 ${t.day} 日`],[btnV22('查看年度',()=>{selectedTaxMasterV24=t.id;render()}),btnV22('歸檔',()=>archiveMasterV23('taxTemplates',t.id,false))]);
+ }
+ if(!visible.length)rowV22(browser,['尚未建立稅務主檔']);
+ const selected=visible.find(t=>t.id===selectedTaxMasterV24);
+ $('taxMasterBrowser').hidden=!!selected;$('taxTemplateForm').hidden=!!selected;
+ $('taxYearPanel').hidden=!selected;
+ if(!selected)return;
+ $('taxYearTitle').textContent=`${selected.name}｜年度明細`;
+ const related=bills.filter(b=>b.sourceTemplateId===selected.id).sort((a,b)=>Number(b.year)-Number(a.year)||b.due.localeCompare(a.due));
+ for(const bill of related){
+  const paid=payments.filter(p=>p.taxBillId===bill.id&&isConfirmed(p)).reduce((n,p)=>n+p.amountCents,0);
+  const remaining=bill.amountCents===null?null:Math.max(0,bill.amountCents-paid);
+  const buttons=[];
+  if(bill.amountCents===null)buttons.push(btnV22('填寫稅額',()=>setTaxAmount(bill.id)));
+  if(bill.status!=='exempt'&&remaining!==null&&remaining>0){
+   const reserved=payments.filter(p=>p.taxBillId===bill.id).reduce((n,p)=>n+p.amountCents,0);
+   const available=Math.max(0,bill.amountCents-reserved);
+   if(available>0)buttons.push(actionForm('tax',bill.id,available));
+  }
+  rowV22(years,[`${bill.year} 年`,bill.name,`截止 ${bill.due}`,remaining===null?'待填稅額':`剩餘 ${money(remaining/100)}`,bill.status==='exempt'?'免繳':remaining===0?'已結清':'待繳'],buttons);
+  for(const p of payments.filter(p=>p.taxBillId===bill.id)){
+   const actions=isConfirmed(p)?[]:[btnV22('核對',()=>reconcilePayment('tax',p.id)),btnV22('修改',()=>editPayment('tax',p.id)),btnV22('刪除',()=>deletePaymentV22('tax',p.id))];
+   rowV22(years,['付款',p.paidAt,money(p.amountCents/100),isConfirmed(p)?'已核對':'待核對',p.note||''],actions);
+  }
+ }
+ if(!related.length)rowV22(years,['目前沒有年度稅單']);
+};
+async function init(){try{db=await openDb();document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));$('message').textContent=''}));$('planSearch').addEventListener('input',e=>{planView.search=e.target.value;planView.page=1;render()});$('planFilter').addEventListener('change',e=>{planView.filter=e.target.value;planView.page=1;render()});$('backToPlans').addEventListener('click',()=>{planView.selectedId=null;render();$('plans').scrollIntoView({block:'start'})});$('planForm').addEventListener('submit',createPlan);$('taxForm').addEventListener('submit',createTax);$('cardForm').addEventListener('submit',createCard);$('cardTransactionForm').addEventListener('submit',createCardTransaction);$('cardRefundForm').addEventListener('submit',createRefundV22);$('existingPeriodForm').addEventListener('submit',createExistingPeriodV22);$('taxTemplateForm').addEventListener('submit',createTaxTemplate);$('generateTaxBills').addEventListener('click',generateYearTaxes);$('generateTaxYear').value=new Date().getFullYear();$('historyCategory').addEventListener('change',()=>render());$('historySearch').addEventListener('input',()=>render());$('clearHistory').addEventListener('click',()=>{$('historyCategory').value='all';$('historySearch').value='';render()});$('historyCsv').addEventListener('click',exportHistoryCsv);$('historyPdf').addEventListener('click',printHistory);$('download').addEventListener('click',exportData);$('taxForm').elements.year.value=new Date().getFullYear();$('taxBack').addEventListener('click',()=>{selectedTaxMasterV24=null;render()});await ensureCurrentTaxYearV24();await render()}catch(err){message(`無法啟動資料庫：${err.message}`);document.querySelectorAll('form button').forEach(x=>x.disabled=true)}}init();
