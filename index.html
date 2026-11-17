@@ -5,4 +5,12 @@
 <div class="panel"><h3>版本資訊</h3><p>V2.2｜單機本機資料｜新台幣整數｜無銀行連線｜無背景推播</p><p>測試資料庫：<code>payment-tax-v22-v225-test</code>，不讀取 V2.0 的 <code>payment-tax-v1</code>。</p></div>
 <div class="panel"><h3>歷史資料封存與清理（預設保留最近 2 年）</h3><p id="historyArchivePreview">先預覽符合封存條件的資料。未結清、未核對及待處理交易不列入。</p><div class="history-actions"><button type="button" id="archivePreviewBtn">預覽封存資料</button><button type="button" id="archiveExportBtn">匯出歷史封存 ZIP</button><button type="button" id="archiveCleanupBtn" disabled>清理已封存歷史（待驗證）</button></div><p class="hint">為避免破壞交易與退款關聯，此測試版暫不開放清理。</p></div>
 <div class="panel"><h3>歷史封存還原</h3><p>歷史封存還原須先驗證資料關聯；此測試版暫不開放寫入。</p><input type="file" id="archiveRestoreFile" accept=".zip,application/zip"><button type="button" id="archiveRestoreBtn">檢查歷史封存 ZIP</button></div>
-</section></main><script src="app.js?v=2.2.8-ui" defer></script></body></html>
+</section></main><script src="app.js?v=2.2.8-ui" defer></script><script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js', {scope:'./'}).catch(err => {
+      console.warn('離線快取註冊失敗', err);
+    });
+  });
+}
+</script></body></html>
