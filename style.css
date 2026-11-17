@@ -78,3 +78,5 @@
 .status-pill{display:inline-block;border-radius:999px;padding:6px 12px;background:#fff0db;color:#8a5209;font-size:.9rem;flex:none}.status-late{background:#ffe7e7;color:#9c2525}.status-soon{background:#fff0db;color:#8a5209}
 
 #upcoming .data-row,#cardReminders .data-row{width:max-content;min-width:100%}
+
+#taxPaymentFormsV228{display:grid;gap:12px;margin-top:14px}.tax-payment-entry{border:1px solid #e6dbea;border-radius:12px;padding:14px;background:#fbf9fd;white-space:normal;min-width:0}.tax-payment-entry h4{margin:0 0 10px}.tax-payment-entry form{display:flex;flex-wrap:wrap;gap:10px;align-items:end}.tax-payment-entry form label{flex:1 1 160px;min-width:140px}#cardSettingsDialogV228[hidden]{display:none}#cardSettingsFormV228{display:grid;gap:12px}

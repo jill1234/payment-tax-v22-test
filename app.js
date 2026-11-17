@@ -298,7 +298,7 @@ const previousTaxRenderV24=render;
 render=async function(){
  await previousTaxRenderV24();
  const [masters,bills,payments]=await Promise.all(['taxTemplates','taxBills','taxPayments'].map(all));
- const browser=$('taxTemplateList'),years=$('taxYearList');browser.replaceChildren();years.replaceChildren();
+ const browser=$('taxTemplateList'),years=$('taxYearList'),paymentForms=$('taxPaymentFormsV228');browser.replaceChildren();years.replaceChildren();paymentForms.replaceChildren();
  const visible=masters.filter(t=>!t.archived);
  for(const t of visible){
   rowV22(browser,[t.name,`每年 ${t.month} 月 ${t.day} 日`],[btnV22('查看年度',()=>{selectedTaxMasterV24=t.id;render()}),btnV22(t.active===false?'啟用':'停用',()=>toggleTaxV227(t.id)),btnV22('刪除',()=>deleteTaxMasterV25(t.id))]);
@@ -318,7 +318,7 @@ render=async function(){
   if(bill.status!=='exempt'&&remaining!==null&&remaining>0){
    const reserved=payments.filter(p=>p.taxBillId===bill.id).reduce((n,p)=>n+p.amountCents,0);
    const available=Math.max(0,bill.amountCents-reserved);
-   if(available>0)buttons.push(actionForm('tax',bill.id,available));
+   if(available>0){const section=document.createElement('section');section.className='tax-payment-entry';section.append(textNode('h4',`${bill.year} 年｜${bill.name}｜記錄付款`),actionForm('tax',bill.id,available));paymentForms.append(section)}
   }
   rowV22(years,[`${bill.year} 年`,bill.name,`截止 ${bill.due}`,remaining===null?'待填稅額':`剩餘 ${money(remaining/100)}`,bill.status==='exempt'?'免繳':remaining===0?'已結清':'待繳'],buttons);
   for(const p of payments.filter(p=>p.taxBillId===bill.id)){
@@ -332,7 +332,17 @@ async function init(){try{db=await openDb();document.querySelectorAll('nav butto
 
 // V2.2.5: card settings and safe tax master deletion.
 async function editCardReminderV25(id){const c=(await all('cards')).find(x=>x.id===id);if(!c||c.archived)return message('找不到可編輯的信用卡');const raw=prompt(`${c.name}：提前提醒天數（0～365）`,String(c.remindDays??7));if(raw===null)return;const n=Number(raw);if(!Number.isInteger(n)||n<0||n>365)return message('提醒天數必須介於 0～365');await performV22(['cards','cardPeriods'],(d,ops)=>{const x=d.cards.find(v=>v.id===id);assertV22(x&&!x.archived,'信用卡狀態已變更');x.remindDays=n;ops.put('cards',x);for(const p of d.cardPeriods.filter(v=>v.cardId===id)){p.remindDays=n;ops.put('cardPeriods',p)}},'提醒設定已儲存並立即生效')}
-async function editCardSettingsV25(id){const c=(await all('cards')).find(x=>x.id===id);if(!c||c.archived||!c.frequency)return message('此信用卡不支援修改自動週期設定');const ask=(label,v)=>prompt(label,String(v));const freq=ask('產生頻率：monthly／odd／even',c.frequency);if(freq===null)return;const start=ask('起始日（1～28）',c.startDay);if(start===null)return;const end=ask('截止日（1～28）',c.endDay);if(end===null)return;const off=ask('往前幾個月開始（0～2）',c.offset);if(off===null)return;const threshold=ask('最低消費門檻（整數元）',Math.round(c.thresholdCents/100));if(threshold===null)return;const next={...c,frequency:freq,startDay:Number(start),endDay:Number(end),offset:Number(off),thresholdCents:cents(threshold)};if(!['monthly','odd','even'].includes(freq)||![next.startDay,next.endDay,next.offset].every(Number.isInteger)||next.startDay<1||next.startDay>28||next.endDay<1||next.endDay>28||next.offset<0||next.offset>2||!validMoney(threshold))return message('主檔設定不正確');try{cardScheduleV23(next)}catch(e){return message('日期設定不正確：'+e.message)}if(!confirm('儲存新的信用卡主檔設定？現有消費期不會立即改動，請再按「重新產生消費期」預覽並確認。'))return;await performV22(['cards'],(d,ops)=>{const cur=d.cards.find(x=>x.id===id);assertV22(cur&&!cur.archived,'主檔狀態已變更');Object.assign(cur,{frequency:next.frequency,startDay:next.startDay,endDay:next.endDay,offset:next.offset,thresholdCents:next.thresholdCents});ops.put('cards',cur)},'主檔設定已儲存。請按「重新產生消費期」套用新設定')}
+async function editCardSettingsV25(id){
+ const c=(await all('cards')).find(x=>x.id===id);if(!c||c.archived||!c.frequency)return message('此信用卡不支援修改自動週期設定');
+ const d=$('cardSettingsDialogV228'),f=$('cardSettingsFormV228');for(const k of ['frequency','startDay','endDay','offset'])f.elements[k].value=c[k];f.elements.threshold.value=Math.round(c.thresholdCents/100);$('cardSettingsNameV228').textContent=c.name;d.hidden=false;
+ f.onsubmit=async e=>{e.preventDefault();const v=new FormData(f);const next={...c,frequency:String(v.get('frequency')),startDay:Number(v.get('startDay')),endDay:Number(v.get('endDay')),offset:Number(v.get('offset')),thresholdCents:cents(v.get('threshold'))};
+ if(!['monthly','odd','even'].includes(next.frequency)||![next.startDay,next.endDay,next.offset].every(Number.isInteger)||next.startDay<1||next.startDay>28||next.endDay<1||next.endDay>28||next.offset<0||next.offset>2||!validMoney(v.get('threshold')))return message('主檔設定不正確');
+ try{cardScheduleV23(next)}catch(err){return message('日期設定不正確：'+err.message)}
+ if(!confirm('儲存新的信用卡主檔設定？現有消費期不會立即改動，請再按「重新產生消費期」預覽並確認。'))return;
+ await performV22(['cards'],(data,ops)=>{const cur=data.cards.find(x=>x.id===id);assertV22(cur&&!cur.archived,'主檔狀態已變更');Object.assign(cur,{frequency:next.frequency,startDay:next.startDay,endDay:next.endDay,offset:next.offset,thresholdCents:next.thresholdCents});ops.put('cards',cur)},'主檔設定已儲存。請按「重新產生消費期」套用新設定');d.hidden=true;
+ };
+}
+
 async function deleteTaxMasterV25(id){const [masters,bills,pays]=await Promise.all(['taxTemplates','taxBills','taxPayments'].map(all)),master=masters.find(t=>t.id===id);if(!master||master.archived)return message('請先還原歸檔');const related=bills.filter(b=>b.sourceTemplateId===id);if(related.some(b=>b.archived))return message('此稅務仍有已歸檔年度，請先還原年度稅單');if(related.some(b=>pays.some(p=>p.taxBillId===b.id)))return message('此稅務已有付款紀錄，無法刪除');if(!confirm(`確定刪除「${master.name}」及 ${related.length} 張年度稅單？此操作無法復原。`))return;await performV22(['taxTemplates','taxBills','taxPayments'],(d,ops)=>{const t=d.taxTemplates.find(x=>x.id===id);assertV22(t&&!t.archived,'稅務狀態已變更');const rs=d.taxBills.filter(x=>x.sourceTemplateId===id);assertV22(!rs.some(b=>b.archived),'請先還原所有年度歸檔');assertV22(!rs.some(b=>d.taxPayments.some(p=>p.taxBillId===b.id)),'已有付款紀錄，禁止刪除');for(const b of rs)ops.del('taxBills',b.id);ops.del('taxTemplates',id)},'稅務主檔與沒有付款的年度稅單已刪除')}
 
 // Offline ZIP codec retained from payment-tax-test (V2.1).
@@ -357,7 +367,7 @@ async function printAllPdfV25(){
  const win=window.open('','_blank');if(!win)return message('請允許瀏覽器開啟報表視窗');
  const rows=await reportTransactionsV226();win.document.title='V2.2 付款與消費歷史';
  const style=win.document.createElement('style');style.textContent='body{font:14px sans-serif;padding:20px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #aaa;padding:7px;text-align:left}';win.document.head.append(style);
- win.document.body.append(textNode('h2','付款與消費歷史 '+twDate()));const table=win.document.createElement('table'),tr=win.document.createElement('tr');
+ win.document.body.append(textNode('h2','付款與消費歷史'));const printedAt=new Intl.DateTimeFormat('zh-TW',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date());win.document.body.append(textNode('p','報表產生時間：'+printedAt));const table=win.document.createElement('table'),tr=win.document.createElement('tr');
  for(const x of ['日期','類別','名稱／期別','交易類型','金額','核對狀態','備註'])tr.append(textNode('th',x));table.append(tr);
  for(const r of rows){const tr=win.document.createElement('tr');for(const v of [r.date,r.category,r.name,r.type,money(r.amount/100),r.status,r.note])tr.append(textNode('td',String(v)));table.append(tr)}win.document.body.append(table);win.print();
 }
@@ -545,3 +555,5 @@ async function cancelSettlementV227(group){
   for(const p of ps)ops.del('installmentPayments',p.id);
  },'提前結清付款已取消');
 }
+
+document.addEventListener('DOMContentLoaded',()=>{$('cardSettingsCloseV228')?.addEventListener('click',()=>{$('cardSettingsDialogV228').hidden=true})});
