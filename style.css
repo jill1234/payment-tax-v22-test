@@ -70,3 +70,11 @@
 .attachment-panel{background:#fff;border-radius:18px;padding:24px;max-width:650px;width:100%;max-height:90vh;overflow:auto}
 .attachment-head,.attachment-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}
 .attachment-row{padding:10px 0;border-bottom:1px solid #eee}
+
+/* V2.2.7: one row per record, horizontally scrollable */
+#upcoming .data-row,#cardReminders .data-row{display:flex;flex-wrap:nowrap;white-space:nowrap;align-items:center;min-width:max-content;gap:16px}
+#upcoming,#cardReminders{overflow-x:auto;max-width:100%}
+#upcoming .data-row>span:last-child,#cardReminders .data-row>span:last-child{margin-left:auto}
+.status-pill{display:inline-block;border-radius:999px;padding:6px 12px;background:#fff0db;color:#8a5209;font-size:.9rem;flex:none}.status-late{background:#ffe7e7;color:#9c2525}.status-soon{background:#fff0db;color:#8a5209}
+
+#upcoming .data-row,#cardReminders .data-row{width:max-content;min-width:100%}
