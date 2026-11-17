@@ -189,7 +189,7 @@ const isConfirmed=x=>x.reconciled===true;
 const twDate=()=>{const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const v=Object.fromEntries(parts.map(x=>[x.type,x.value]));return `${v.year}-${v.month}-${v.day}`};
 function shiftDay(date,n){const d=new Date(date+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)}
 function rowV22(root,values,buttons=[]){const r=element('div',{class:'data-row'});for(const v of values)r.append(element('span',{text:String(v)}));for(const b of buttons)r.append(b);root.append(r);return r}
-function btnV22(label,callback){const b=element('button',{type:'button',text:label});b.addEventListener('click',callback);return b}
+function btnV22(label,callback){const b=element('button',{type:'button',text:label});if(label==='刪除'||label.startsWith('刪除'))b.classList.add('delete-action-v228');b.addEventListener('click',callback);return b}
 function txAtomicV22(names,handler){return new Promise((resolve,reject)=>{const tx=db.transaction([...new Set(names)],'readwrite'),data={},stores=[...new Set(names)];let remaining=stores.length,err=null;
  for(const name of stores){const req=tx.objectStore(name).getAll();req.onsuccess=()=>{data[name]=req.result;if(--remaining===0){try{handler(data,{put:(s,v)=>tx.objectStore(s).put(v),del:(s,id)=>tx.objectStore(s).delete(id)})}catch(e){err=e;tx.abort()}}};req.onerror=()=>{err=req.error;tx.abort()}}
  tx.oncomplete=()=>resolve();tx.onerror=()=>reject(err||tx.error||Error('資料庫交易失敗'));tx.onabort=()=>reject(err||tx.error||Error('操作取消，資料未變更'))})}

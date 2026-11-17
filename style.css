@@ -104,3 +104,29 @@
   outline: 2px solid #82699a;
   outline-offset: 3px;
 }
+
+/* V2.2.8 最終 UI：僅備份設定的紫框一般操作使用深藍字。 */
+#settings button:not(.primary):not(:disabled):not(.danger):not(.delete-action-v228) {
+  color:#244B83;
+  font-weight:600;
+}
+/* 所有刪除操作使用深紅色文字；不改變按鈕事件。 */
+button.delete-action-v228,
+button[id*="delete" i],
+button[id*="remove" i],
+button[id*="cleanup" i],
+button[id*="clear" i].danger {
+  color:#9B2635;
+  font-weight:600;
+}
+/* 已確認的兩組表單間距。 */
+#generateTaxYear + button { margin-top:16px; }
+#generateTaxBills { margin-top:16px; }
+#fullRestoreFile { margin-bottom:16px; }
+#archiveRestoreFile { margin-bottom:16px; }
+#settings #archiveRestoreBtn {
+  color:#244B83;
+  font-weight:600;
+  border-color:#9d83b5;
+  background:#fff;
+}
