@@ -557,3 +557,33 @@ async function cancelSettlementV227(group){
 }
 
 document.addEventListener('DOMContentLoaded',()=>{$('cardSettingsCloseV228')?.addEventListener('click',()=>{$('cardSettingsDialogV228').hidden=true})});
+
+
+// UI-only presentation pass: keep existing reminder selection, dates and accounting untouched.
+const renderBeforeOverviewUiV228 = render;
+render = async function(){
+  await renderBeforeOverviewUiV228();
+  const upcomingRoot = document.getElementById('upcoming');
+  const taxReminderKeys = new Set((await all('taxBills')).filter(b=>!b.archived).map(b=>b.name+'\u0000'+b.due));
+  for(const row of [...upcomingRoot.children]){
+    if(!row.classList.contains('data-row')) continue;
+    const cells=[...row.children];
+    if(cells.length===1){row.classList.add('overview-empty');continue;}
+    if(cells.length<4)continue;
+    const [name,date,amount,status]=cells;
+    const info=document.createElement('div');info.className='overview-info';
+    name.className='overview-name';
+    const meta=document.createElement('span');meta.className='overview-meta';
+    // Preserve existing title and due date; category comes from the source record when available.
+    const label=name.textContent||'';
+    const category=taxReminderKeys.has(label+'\u0000'+date.textContent)?'稅務':'分期';
+    meta.textContent=category+' · '+date.textContent;
+    info.append(name,meta);
+    row.replaceChildren(info,status);
+    row.classList.add('overview-reminder');
+  }
+  const cards=document.getElementById('cardReminders');
+  for(const row of [...cards.children]){
+    if(row.classList.contains('data-row')&&row.textContent.includes('目前沒有'))row.classList.add('overview-empty');
+  }
+};

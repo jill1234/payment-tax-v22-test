@@ -1,6 +1,6 @@
 /* V2.2.8 offline test: app-shell only; user data remains in IndexedDB. */
 'use strict';
-const CACHE_NAME = 'payment-tax-v228-test-shell-1';
+const CACHE_NAME = 'payment-tax-v228-test-shell-3';
 const CACHE_PREFIX = 'payment-tax-v228-test-shell-';
 const APP_FILES = ['./', './index.html', './app.js', './style.css', './manifest.webmanifest', './icon-512.png'];
 const APP_URLS = APP_FILES.map(path => new URL(path, self.registration.scope).href);
@@ -9,6 +9,7 @@ self.addEventListener('install', event => {
     const cache = await caches.open(CACHE_NAME);
     // Installation fails if a required file cannot be cached: no false offline-ready state.
     await cache.addAll(APP_URLS.map(url => new Request(url, {cache:'reload'})));
+    await self.skipWaiting();
   })());
 });
 self.addEventListener('activate', event => {
